@@ -38,7 +38,7 @@ libraryDependencies ++= {
 
   Seq(
     "com.typesafe.play" %% "play-json" % PlayJsonVersion,
-    "org.scalatest" %% "scalatest" % "3.0.1" excludeAll(ExclusionRule("org.scala-lang", "scala-reflect"))
+    "org.scalatest" %% "scalatest" % "3.0.1"  % Test excludeAll(ExclusionRule("org.scala-lang", "scala-reflect"))
   )
 }
 

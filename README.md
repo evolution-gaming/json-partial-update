@@ -7,7 +7,7 @@
 
 ```scala
 libraryDependencies ++= Seq(
-  "com.evolutiongaming" %% "json-partial-update" % "0.1.9",
+  "com.evolutiongaming" %% "json-partial-update" % "0.1.8",
   ...
 )
 ```

@@ -18,6 +18,10 @@ bintrayOrganization := Some("evolutiongaming")
 
 scalaVersion := "2.11.11"
 
+//crossScalaVersions := Seq("2.11.11", "2.12.2")
+//
+//releaseCrossBuild := true
+
 scalacOptions ++= Seq(
   "-encoding", "UTF-8",
   "-feature",
@@ -31,10 +35,10 @@ scalacOptions ++= Seq(
   "-Xfuture"
 )
 
-scalacOptions in (Compile,doc) ++= Seq("-groups", "-implicits", "-no-link-warnings")
+scalacOptions in (Compile, doc) ++= Seq("-groups", "-implicits", "-no-link-warnings")
 
 libraryDependencies ++= {
-  val PlayJsonVersion = "2.5.14"
+  val PlayJsonVersion = "2.6.2"
 
   Seq(
     "com.typesafe.play" %% "play-json" % PlayJsonVersion,

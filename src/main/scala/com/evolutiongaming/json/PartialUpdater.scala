@@ -26,7 +26,7 @@ import scala.reflect.macros.{Universe, blackbox}
   * Dealing with partial updaters is as easy as it is in case of Play formats.
   * The only thing you have to do is declare
   * {{{
-  *   import com.evolutiongaming.util.json.PartialUpdater._
+  *   import com.evolutiongaming.json.PartialUpdater._
   *
   *   implicit val entityUpdater: PartialUpdater[Entity] = PartialUpdater.updater[Entity]
   *
@@ -38,7 +38,7 @@ import scala.reflect.macros.{Universe, blackbox}
   * If you use embedded entities, you have to make sure that all
   * needed [[play.api.libs.json.Reads]] are accessible in implicit scope.
   *
-  * For more examples please take a look at [[com.evolutiongaming.util.json.PartialUpdaterSpec]].
+  * For more examples please take a look at [[com.evolutiongaming.json.PartialUpdaterSpec]].
   *
   * @tparam T a case class type
   */

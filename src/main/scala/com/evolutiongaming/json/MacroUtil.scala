@@ -32,8 +32,7 @@ private[json] object MacroUtil {
     val annotations = tpe.decls.collect {
       case s: MethodSymbol if s.isCaseAccessor =>
         // workaround: force loading annotations
-        s.typeSignature
-        s.accessed.annotations.foreach(_.tree.tpe)
+        s.accessed.info
 
         s.name.toString.trim -> s.accessed.annotations
     }.toMap

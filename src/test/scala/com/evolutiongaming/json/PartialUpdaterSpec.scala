@@ -6,15 +6,14 @@ import org.scalatest.WordSpec
 import play.api.libs.json._
 import com.evolutiongaming.json.PartialUpdater._
 
-import scala.language.implicitConversions
 
 class PartialUpdaterSpec extends WordSpec {
   import PartialUpdaterSpec._
   
-  implicit val phoneReads: Reads[Phone]                 = Json.reads[Phone]
-  implicit val phoneUpdater: PartialUpdater[Phone]      = PartialUpdater.updater[Phone]
-  implicit val addressUpdater: PartialUpdater[Address]  = PartialUpdater.updater[Address]
-  implicit val profileUpdater: PartialUpdater[Profile]  = PartialUpdater.updater[Profile]
+  implicit val phoneReads: Reads[Phone]                = Json.reads[Phone]
+  implicit val phoneUpdater: PartialUpdater[Phone]     = PartialUpdater.updater[Phone]
+  implicit val addressUpdater: PartialUpdater[Address] = PartialUpdater.updater[Address]
+  implicit val profileUpdater: PartialUpdater[Profile] = PartialUpdater.updater[Profile]
 
   s"PartialUpdater" must {
     "not affect entity if json is empty" in new Scope {
@@ -68,7 +67,6 @@ class PartialUpdaterSpec extends WordSpec {
         area = "area",
         number = "number")))
   }
-
 }
 
 object PartialUpdaterSpec {

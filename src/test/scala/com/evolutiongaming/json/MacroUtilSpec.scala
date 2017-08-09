@@ -3,6 +3,7 @@ package com.evolutiongaming.json
 import org.scalatest.MustMatchers._
 import org.scalatest.WordSpec
 
+
 class MacroUtilSpec extends WordSpec {
   import MacroUtilSpec._
 
@@ -16,7 +17,6 @@ class MacroUtilSpec extends WordSpec {
       fields mustBe resultingMap
     }
   }
-
 }
 
 object MacroUtilSpec {

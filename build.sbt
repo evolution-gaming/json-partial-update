@@ -38,7 +38,7 @@ scalacOptions ++= Seq(
 scalacOptions in (Compile, doc) ++= Seq("-groups", "-implicits", "-no-link-warnings")
 
 libraryDependencies ++= {
-  val PlayJsonVersion = "2.6.2"
+  val PlayJsonVersion = "2.6.3"
 
   Seq(
     "com.typesafe.play" %% "play-json" % PlayJsonVersion,

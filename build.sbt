@@ -16,9 +16,9 @@ organizationHomepage := Some(url("http://evolutiongaming.com"))
 
 bintrayOrganization := Some("evolutiongaming")
 
-scalaVersion := "2.12.3"
+scalaVersion := crossScalaVersions.value.last
 
-crossScalaVersions := Seq("2.11.11", "2.12.3")
+crossScalaVersions := Seq("2.11.12", "2.12.7")
 
 releaseCrossBuild := true
 
@@ -37,13 +37,8 @@ scalacOptions ++= Seq(
 
 scalacOptions in (Compile, doc) ++= Seq("-groups", "-implicits", "-no-link-warnings")
 
-libraryDependencies ++= {
-  val PlayJsonVersion = "2.6.3"
-
-  Seq(
-    "com.typesafe.play" %% "play-json" % PlayJsonVersion,
-    "org.scalatest" %% "scalatest" % "3.0.1"  % Test excludeAll(ExclusionRule("org.scala-lang", "scala-reflect"))
-  )
-}
+libraryDependencies ++= Seq(
+  "com.typesafe.play" %% "play-json" % "2.6.10",
+  "org.scalatest" %% "scalatest" % "3.0.5"  % Test)
 
 licenses := Seq(("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")))

@@ -18,7 +18,7 @@ bintrayOrganization := Some("evolutiongaming")
 
 scalaVersion := crossScalaVersions.value.last
 
-crossScalaVersions := Seq("2.11.12", "2.12.8")
+crossScalaVersions := Seq("2.11.12", "2.12.10", "2.13.1")
 
 releaseCrossBuild := true
 
@@ -29,10 +29,8 @@ scalacOptions ++= Seq(
   "-deprecation",
   "-Xfatal-warnings",
   "-Xlint",
-  "-Yno-adapted-args",
   "-Ywarn-dead-code",
   "-Ywarn-numeric-widen",
-  "-Xfuture"
 )
 
 scalacOptions in (Compile, doc) ++= Seq("-groups", "-implicits", "-no-link-warnings")

@@ -1,13 +1,14 @@
 package com.evolutiongaming.json
 
-import org.scalatest.MustMatchers._
-import org.scalatest.WordSpec
+import matchers.must.Matchers._
 
 import play.api.libs.json._
 import com.evolutiongaming.json.PartialUpdater._
+import org.scalatest.matchers
+import org.scalatest.wordspec.AnyWordSpec
 
 
-class PartialUpdaterSpec extends WordSpec {
+class PartialUpdaterSpec extends AnyWordSpec {
   import PartialUpdaterSpec._
   
   implicit val phoneReads: Reads[Phone]                = Json.reads[Phone]

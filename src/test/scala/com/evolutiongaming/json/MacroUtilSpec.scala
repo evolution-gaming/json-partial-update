@@ -1,10 +1,11 @@
 package com.evolutiongaming.json
 
-import org.scalatest.MustMatchers._
-import org.scalatest.WordSpec
+import matchers.must.Matchers._
+import org.scalatest.matchers
+import org.scalatest.wordspec.AnyWordSpec
 
 
-class MacroUtilSpec extends WordSpec {
+class MacroUtilSpec extends AnyWordSpec {
   import MacroUtilSpec._
 
   "Util" must {

@@ -18,7 +18,7 @@ bintrayOrganization := Some("evolutiongaming")
 
 scalaVersion := crossScalaVersions.value.last
 
-crossScalaVersions := Seq("2.11.12", "2.12.10", "2.13.0")
+crossScalaVersions := Seq("2.13.5", "2.12.10", "2.13.0")
 
 releaseCrossBuild := true
 

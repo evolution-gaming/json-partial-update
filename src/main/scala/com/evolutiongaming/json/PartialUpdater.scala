@@ -102,9 +102,9 @@ object PartialUpdater {
                                    (r, entity.$n) match {
                                      case (None, None)              => None
                                      case (Some(None), None)        => None
-                                     case (Some(Some(r)), None)     => u.opt[$ft]($path)
+                                     case (Some(Some(_)), None)     => u.opt[$ft]($path)
                                      case (None, Some(a))           => Some(a)
-                                     case (Some(None), Some(a))     => None
+                                     case (Some(None), Some(_))     => None
                                      case (Some(Some(r)), Some(a))  => Some(implicitly[PartialUpdater[$ft]].apply(a, r))
                                    }
                                  }

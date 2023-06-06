@@ -109,6 +109,7 @@ object PartialUpdater {
                                    }
                                  }
                                 """
+        case _ => c.abort(c.enclosingPosition, s"Unsupported type: $t")
       }
 
       (n, expr)

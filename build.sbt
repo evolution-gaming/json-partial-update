@@ -8,17 +8,15 @@ startYear := Some(2016)
 
 publishMavenStyle := true
 
-organizationName := "Evolution Gaming"
+publishTo := Some(Resolver.evolutionReleases)
 
-resolvers += Resolver.bintrayRepo("evolutiongaming", "maven")
+organizationName := "Evolution"
 
-organizationHomepage := Some(url("http://evolutiongaming.com"))
-
-bintrayOrganization := Some("evolutiongaming")
+organizationHomepage := Some(url("http://evolution.com"))
 
 scalaVersion := crossScalaVersions.value.last
 
-crossScalaVersions := Seq("2.11.12", "2.12.10", "2.13.0")
+crossScalaVersions := Seq("2.12.17", "2.13.10")
 
 releaseCrossBuild := true
 
@@ -33,10 +31,10 @@ scalacOptions ++= Seq(
   "-Ywarn-numeric-widen",
 )
 
-scalacOptions in (Compile, doc) ++= Seq("-groups", "-implicits", "-no-link-warnings")
+Compile / doc / scalacOptions += "-no-link-warnings"
 
 libraryDependencies ++= Seq(
-  "com.typesafe.play" %% "play-json" % "2.7.4",
+  "com.typesafe.play" %% "play-json" % "2.9.4",
   "org.scalatest" %% "scalatest" % "3.0.8"  % Test)
 
 licenses := Seq(("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")))

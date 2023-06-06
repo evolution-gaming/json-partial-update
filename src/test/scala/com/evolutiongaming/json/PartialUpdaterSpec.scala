@@ -74,10 +74,10 @@ object PartialUpdaterSpec {
     def json(args: Any*): JsValue = {
       val strings = sc.parts.iterator
       val expressions = args.iterator
-      val buf = new StringBuilder(strings.next)
+      val buf = new StringBuilder(strings.next())
       while(strings.hasNext) {
-        buf append expressions.next
-        buf append strings.next
+        buf append expressions.next()
+        buf append strings.next()
       }
       Json parse buf.toString
     }

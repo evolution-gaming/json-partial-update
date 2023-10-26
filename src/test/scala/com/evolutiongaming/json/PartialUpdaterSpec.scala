@@ -6,10 +6,9 @@ import org.scalatest.WordSpec
 import play.api.libs.json._
 import com.evolutiongaming.json.PartialUpdater._
 
-
 class PartialUpdaterSpec extends WordSpec {
   import PartialUpdaterSpec._
-  
+
   implicit val phoneReads: Reads[Phone]                = Json.reads[Phone]
   implicit val phoneUpdater: PartialUpdater[Phone]     = PartialUpdater.updater[Phone]
   implicit val addressUpdater: PartialUpdater[Address] = PartialUpdater.updater[Address]
@@ -52,6 +51,10 @@ class PartialUpdaterSpec extends WordSpec {
     "affect entity's 'phone' if json contains 'phone' property with null" in new Scope {
       (profile updated json"""{"phone": null}""") mustBe profile.copy(phone = None)
     }
+
+    "affect entity's 'type' if json contains 'type' property" in new Scope {
+      (profile updated json"""{"type": "premium"}""") mustBe profile.copy(`type` = Some(ProfileType.Premium))
+    }
   }
 
   trait Scope {
@@ -65,7 +68,9 @@ class PartialUpdaterSpec extends WordSpec {
       alias = Some("alias"),
       phone = Some(Phone(
         area = "area",
-        number = "number")))
+        number = "number")),
+      `type` = Some(ProfileType.Free),
+    )
   }
 }
 

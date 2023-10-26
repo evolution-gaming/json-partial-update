@@ -65,13 +65,19 @@ object PartialUpdater {
       val symbol = t.typeSymbol
       require(symbol.isClass)
 
-      symbol.asClass match {
-        case x if x.isCaseClass && !x.isDerivedValueClass => CaseClass(t)
-        case x if x.isCaseClass && x.isDerivedValueClass =>
-          val innerArg = x.primaryConstructor.asMethod.paramLists.head.head
+      val c = symbol.asClass
+      if (c.isCaseClass) {
+        if (c.isDerivedValueClass) {
+          val innerArg = c.primaryConstructor.asMethod.paramLists.head.head
           val innerType = innerArg.typeSignature
           ValueClass(t, innerType)
-        case _ => Generic(t)
+        } else if (c.isAbstract) {
+          Generic(t)
+        } else {
+          CaseClass(t)
+        }
+      } else {
+        Generic(t)
       }
     }
   }

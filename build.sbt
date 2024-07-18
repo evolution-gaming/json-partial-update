@@ -2,7 +2,7 @@ name := "json-partial-update"
 
 organization := "com.evolutiongaming"
 
-homepage := Some(new URL("http://github.com/evolution-gaming/json-partial-update"))
+homepage := Some(url("https://github.com/evolution-gaming/json-partial-update"))
 
 startYear := Some(2016)
 
@@ -12,7 +12,7 @@ publishTo := Some(Resolver.evolutionReleases)
 
 organizationName := "Evolution"
 
-organizationHomepage := Some(url("http://evolution.com"))
+organizationHomepage := Some(url("https://evolution.com"))
 
 scalaVersion := crossScalaVersions.value.last
 
@@ -38,3 +38,7 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.0.8"  % Test)
 
 licenses := Seq(("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")))
+
+//addCommandAlias("check", "all versionPolicyCheck Compile/doc")
+addCommandAlias("check", "show version")
+addCommandAlias("build", "+all compile test")

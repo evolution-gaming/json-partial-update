@@ -34,7 +34,7 @@ scalacOptions ++= Seq(
 Compile / doc / scalacOptions += "-no-link-warnings"
 
 libraryDependencies ++= Seq(
-  "com.typesafe.play" %% "play-json" % "2.9.4",
+  "com.typesafe.play" %% "play-json" % "2.10.7",
   "org.scalatest" %% "scalatest" % "3.0.8"  % Test)
 
 licenses := Seq(("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")))

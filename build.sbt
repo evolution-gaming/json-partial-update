@@ -35,7 +35,7 @@ Compile / doc / scalacOptions += "-no-link-warnings"
 
 libraryDependencies ++= Seq(
   "org.playframework" %% "play-json" % "3.0.6",
-  "org.scalatest" %% "scalatest" % "3.0.8"  % Test)
+  "org.scalatest" %% "scalatest" % "3.2.20"  % Test)
 
 licenses := Seq(("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")))
 

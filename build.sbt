@@ -16,7 +16,7 @@ organizationHomepage := Some(url("https://evolution.com"))
 
 scalaVersion := crossScalaVersions.value.last
 
-crossScalaVersions := Seq("2.13.10")
+crossScalaVersions := Seq("2.13.18")
 
 releaseCrossBuild := true
 

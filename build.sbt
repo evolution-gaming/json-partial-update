@@ -16,9 +16,7 @@ organizationHomepage := Some(url("https://evolution.com"))
 
 scalaVersion := crossScalaVersions.value.last
 
-crossScalaVersions := Seq("2.12.17", "2.13.10")
-
-releaseCrossBuild := true
+crossScalaVersions := Seq("2.13.18")
 
 scalacOptions ++= Seq(
   "-encoding", "UTF-8",
@@ -34,8 +32,8 @@ scalacOptions ++= Seq(
 Compile / doc / scalacOptions += "-no-link-warnings"
 
 libraryDependencies ++= Seq(
-  "com.typesafe.play" %% "play-json" % "2.9.4",
-  "org.scalatest" %% "scalatest" % "3.0.8"  % Test)
+  "org.playframework" %% "play-json" % "3.0.6",
+  "org.scalatest" %% "scalatest" % "3.2.20"  % Test)
 
 licenses := Seq(("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")))
 

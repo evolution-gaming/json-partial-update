@@ -109,9 +109,9 @@ object PartialUpdater {
                                      case (None, None)              => None
                                      case (Some(None), None)        => None
                                      case (Some(Some(_)), None)     => u.opt[$ft]($path)
-                                     case (None, Some(a))           => Some(a)
+                                     case (None, Some(xx))          => Some(xx)
                                      case (Some(None), Some(_))     => None
-                                     case (Some(Some(r)), Some(a))  => Some(implicitly[PartialUpdater[$ft]].apply(a, r))
+                                     case (Some(Some(r)), Some(xx)) => Some(implicitly[PartialUpdater[$ft]].apply(xx, r))
                                    }
                                  }
                                 """

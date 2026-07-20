@@ -57,6 +57,22 @@ class PartialUpdaterSpec extends AnyWordSpec {
     }
   }
 
+  "PartialUpdater of entity with value class fields" must {
+    implicit val docUpdater: PartialUpdater[Doc] = PartialUpdater.updater[Doc]
+    val doc = Doc(rev = Version(1), tag = Some(Version(2)), name = "name")
+
+    "not affect entity if json is empty" in {
+      (doc updated json"""{}""") mustBe doc
+    }
+    "affect value class field" in {
+      (doc updated json"""{"rev": 42}""") mustBe doc.copy(rev = Version(42))
+    }
+    "affect optional value class field" in {
+      (doc updated json"""{"tag": 42}""") mustBe doc.copy(tag = Some(Version(42)))
+      (doc updated json"""{"tag": null}""") mustBe doc.copy(tag = None)
+    }
+  }
+
   trait Scope {
     val profile = Profile(
       id = "id",

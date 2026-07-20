@@ -14,9 +14,9 @@ organizationName := "Evolution"
 
 organizationHomepage := Some(url("https://evolution.com"))
 
-scalaVersion := crossScalaVersions.value.last
+scalaVersion := crossScalaVersions.value.head
 
-crossScalaVersions := Seq("2.13.18")
+crossScalaVersions := Seq("2.13.18", "3.3.8")
 
 scalacOptions ++= Seq(
   "-encoding", "UTF-8",
@@ -24,12 +24,25 @@ scalacOptions ++= Seq(
   "-unchecked",
   "-deprecation",
   "-Xfatal-warnings",
-  "-Xlint",
-  "-Ywarn-dead-code",
-  "-Ywarn-numeric-widen",
 )
 
-Compile / doc / scalacOptions += "-no-link-warnings"
+scalacOptions ++= {
+  CrossVersion.partialVersion(scalaVersion.value) match {
+    case Some((2, _)) => Seq(
+      "-Xlint",
+      "-Ywarn-dead-code",
+      "-Ywarn-numeric-widen",
+    )
+    case _ => Seq.empty
+  }
+}
+
+Compile / doc / scalacOptions ++= {
+  CrossVersion.partialVersion(scalaVersion.value) match {
+    case Some((2, _)) => Seq("-no-link-warnings")
+    case _            => Seq.empty
+  }
+}
 
 libraryDependencies ++= Seq(
   "org.playframework" %% "play-json" % "3.0.6",

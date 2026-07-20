@@ -13,6 +13,9 @@ case class Profile(
   `type`: Option[ProfileType],
 )
 
+case class Version(value: Int) extends AnyVal
+case class Doc(rev: Version, tag: Option[Version], name: String)
+
 sealed abstract case class ProfileType(value: String)
 
 object ProfileType {

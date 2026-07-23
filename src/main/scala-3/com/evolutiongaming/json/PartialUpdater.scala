@@ -25,7 +25,7 @@ import scala.quoted.*
   * Dealing with partial updaters is as easy as it is in case of Play formats.
   * The only thing you have to do is declare
   * {{{
-  *   import com.evolutiongaming.json.PartialUpdater._
+  *   import com.evolutiongaming.json.PartialUpdater.*
   *
   *   implicit val entityUpdater: PartialUpdater[Entity] = PartialUpdater.updater[Entity]
   *

@@ -176,7 +176,7 @@ object PartialUpdater {
     }
 
     // entity.copy(...) with every field passed positionally: updatable fields get
-    // their computed value, @skip fields get the current value
+    // their computed value, @skip fields keep the current value
     def copy(entity: Expr[T], u: Expr[JsonReader]): Expr[T] = {
       val args = symbol.caseFields.map(f => fieldValue(entity, u, f))
       val copySel = Select.unique(entity.asTerm, "copy")

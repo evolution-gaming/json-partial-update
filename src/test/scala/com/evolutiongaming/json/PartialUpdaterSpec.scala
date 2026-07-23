@@ -61,7 +61,7 @@ class PartialUpdaterSpec extends AnyWordSpec {
     implicit val docUpdater: PartialUpdater[Doc] = PartialUpdater.updater[Doc]
     val doc = Doc(rev = Version(1), tag = Some(Version(2)), name = "name")
 
-    "not affect entity if json is empty" in {
+    "not affect entity if updating with empty json" in {
       (doc updated json"""{}""") mustBe doc
     }
     "affect value class field" in {

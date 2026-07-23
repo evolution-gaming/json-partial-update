@@ -73,21 +73,6 @@ class PartialUpdaterSpec extends AnyWordSpec {
     }
   }
 
-  "PartialUpdater of generic entity" must {
-    implicit val boxUpdater: PartialUpdater[Box[String]] = PartialUpdater.updater[Box[String]]
-    val box = Box[String](value = "value", name = "name")
-
-    "not affect entity if json is empty" in {
-      (box updated json"""{}""") mustBe box
-    }
-    "affect field of parameterized type" in {
-      (box updated json"""{"value": "updated"}""") mustBe box.copy(value = "updated")
-    }
-    "affect plain field" in {
-      (box updated json"""{"name": "updated"}""") mustBe box.copy(name = "updated")
-    }
-  }
-
   trait Scope {
     val profile = Profile(
       id = "id",

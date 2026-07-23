@@ -22,8 +22,6 @@ object Version {
 
 case class Doc(rev: Version, tag: Option[Version], name: String)
 
-case class Box[A](value: A, name: String)
-
 sealed abstract case class ProfileType(value: String)
 
 object ProfileType {

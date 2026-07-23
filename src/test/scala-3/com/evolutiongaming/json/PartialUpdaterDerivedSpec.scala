@@ -10,7 +10,7 @@ class PartialUpdaterDerivedSpec extends AnyWordSpec {
   import PartialUpdaterDerivedSpec.*
 
   "derives PartialUpdater" must {
-    "not affect entity if json is empty" in {
+    "not affect entity if updating with empty json" in {
       (account updated Json.obj()) mustBe account
     }
     "not affect entity if json contains unrelated fields" in {

@@ -138,14 +138,14 @@ object PartialUpdater {
               case ('[v], '[i]) =>
                 val reads = summonOrAbort[Reads[i]](name)
                 def wrap(x: Expr[i]): Expr[v] =
-                  Apply(Select.unique(Ref(ft.typeSymbol.companionModule), "apply"), List(x.asTerm)).asExprOf[v]
+                  Select.overloaded(Ref(ft.typeSymbol.companionModule), "apply", Nil, List(x.asTerm)).asExprOf[v]
                 '{ $u.opt[i]($path)(using $reads) map { (x: i) => ${ wrap('x) } } getOrElse ${ sel.asExprOf[v] } }
             }
             case (true, ValueClass(ft, inner)) => (ft.asType, inner.asType) match {
               case ('[v], '[i]) =>
                 val reads = summonOrAbort[Reads[i]](name)
                 def wrap(x: Expr[i]): Expr[v] =
-                  Apply(Select.unique(Ref(ft.typeSymbol.companionModule), "apply"), List(x.asTerm)).asExprOf[v]
+                  Select.overloaded(Ref(ft.typeSymbol.companionModule), "apply", Nil, List(x.asTerm)).asExprOf[v]
                 '{ $u.optOpt[i]($path)(using $reads) map { _ map { (x: i) => ${ wrap('x) } } } getOrElse ${ sel.asExprOf[Option[v]] } }
             }
             case (false, CaseClass(ft)) => ft.asType match {

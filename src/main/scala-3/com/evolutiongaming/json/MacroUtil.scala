@@ -3,23 +3,12 @@ package com.evolutiongaming.json
 import scala.quoted.*
 
 /**
-  * The only purpose of this class is to provide the ability to
-  * extract Map[String, Class[_]] of case class fields which are
-  * not marked by @skip annotation.
+  * The only purpose of this object is to enumerate case class fields
+  * which are not marked by @skip annotation.
   *
-  * This map is used by PartialUpdater macro.
+  * This list is used by PartialUpdater macro.
   */
 private[json] object MacroUtil {
-  inline def fieldMap[T]: Map[String, Class[?]] = ${ fieldMapImpl[T] }
-
-  private def fieldMapImpl[T: Type](using Quotes): Expr[Map[String, Class[?]]] = {
-    import quotes.reflect.*
-    val pairs = fieldMap(TypeRepr.of[T]) map { case (name, tpe) =>
-      val clazz = Literal(ClassOfConstant(tpe)).asExprOf[Class[?]]
-      '{ ${ Expr(name) } -> $clazz }
-    }
-    '{ Map(${ Varargs(pairs) }*) }
-  }
 
   /**
     * Enumerates case class fields not marked by @skip, in declaration order.

@@ -47,7 +47,8 @@ private[json] object MacroUtil {
         val name = s.name.toString.trim
         if ( s.isVal
           && s.isCaseAccessor
-          && !shouldSkip(name)) Some((TermName(name), s.typeSignature)) else None
+          // typeSignatureIn substitutes type parameters, e.g. A -> String for Box[String]
+          && !shouldSkip(name)) Some((TermName(name), s.typeSignatureIn(tpe))) else None
       }
     }
 

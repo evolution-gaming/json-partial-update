@@ -71,8 +71,6 @@ object PartialUpdater {
     if (!(symbol.isClassDef && symbol.flags.is(Flags.Case) && !symbol.flags.is(Flags.Abstract)))
       report.errorAndAbort(s"${tpe.show} is not a concrete case class")
 
-    val optionTpe = TypeRepr.of[Option[Any]]
-
     sealed trait ResultingType { def tpe: TypeRepr }
     object ResultingType {
 
@@ -115,7 +113,7 @@ object PartialUpdater {
 
         case Some(t) =>
           val path = Expr(name)
-          val isOption = t <:< optionTpe
+          val isOption = t <:< TypeRepr.of[Option[Any]]
           val innerTpe = if (isOption) {
             t.dealias match {
               case AppliedType(_, List(arg)) => arg

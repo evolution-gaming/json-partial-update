@@ -19,7 +19,7 @@ class PartialUpdaterGenericSpec extends AnyWordSpec {
   val box = Box[String](value = "value", tag = Some("tag"), name = "name")
 
   "PartialUpdater of generic entity" must {
-    "not affect entity if json is empty" in {
+    "not affect entity if updating with empty json" in {
       (box updated Json.obj()) mustBe box
     }
     "affect field of parameterized type" in {

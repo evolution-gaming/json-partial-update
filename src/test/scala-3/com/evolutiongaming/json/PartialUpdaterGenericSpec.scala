@@ -5,6 +5,7 @@ import org.scalatest.wordspec.AnyWordSpec
 
 import play.api.libs.json.*
 import com.evolutiongaming.json.PartialUpdater.*
+import com.evolutiongaming.json.PartialUpdaterGenericSpec.*
 
 /**
   * Parameterized case classes are supported on Scala 3 only:
@@ -13,7 +14,6 @@ import com.evolutiongaming.json.PartialUpdater.*
   * See https://github.com/evolution-gaming/json-partial-update/pull/132/changes/4fde29b66c12423786a398e0a596c5a01cf8a28c
   */
 class PartialUpdaterGenericSpec extends AnyWordSpec {
-  import PartialUpdaterGenericSpec.*
 
   implicit val boxUpdater: PartialUpdater[Box[String]] = PartialUpdater.updater[Box[String]]
   val box = Box[String](value = "value", tag = Some("tag"), name = "name")

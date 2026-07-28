@@ -78,19 +78,19 @@ object PartialUpdater {
       case class CaseClass(tpe: TypeRepr) extends ResultingType
       case class Generic(tpe: TypeRepr) extends ResultingType
 
-      def apply(t: TypeRepr): ResultingType = {
-        val s = t.typeSymbol
-        if (s.isClassDef && s.flags.is(Flags.Case)) {
-          if (t <:< TypeRepr.of[AnyVal]) {
-            val innerField = s.caseFields.head
-            ValueClass(t, t.memberType(innerField).widenByName)
-          } else if (s.flags.is(Flags.Abstract)) {
-            Generic(t)
+      def apply(fieldType: TypeRepr): ResultingType = {
+        val symbol = fieldType.typeSymbol
+        if (symbol.isClassDef && symbol.flags.is(Flags.Case)) {
+          if (fieldType <:< TypeRepr.of[AnyVal]) {
+            val innerField = symbol.caseFields.head
+            ValueClass(fieldType, fieldType.memberType(innerField).widenByName)
+          } else if (symbol.flags.is(Flags.Abstract)) {
+            Generic(fieldType)
           } else {
-            CaseClass(t)
+            CaseClass(fieldType)
           }
         } else {
-          Generic(t)
+          Generic(fieldType)
         }
       }
     }
@@ -101,7 +101,7 @@ object PartialUpdater {
 
     val updatable = MacroUtil.fieldMap(tpe).toMap
 
-    def fieldValue(entity: Expr[T], u: Expr[JsonReader], field: Symbol): Term = {
+    def fieldValue(entity: Expr[T], reader: Expr[JsonReader], field: Symbol): Term = {
       import ResultingType.*
 
       val name = field.name
@@ -111,63 +111,63 @@ object PartialUpdater {
         // field is marked with @skip: keep the current value
         case None => sel
 
-        case Some(t) =>
+        case Some(fieldType) =>
           val path = Expr(name)
-          val isOption = t <:< TypeRepr.of[Option[Any]]
-          val innerTpe = if (isOption) {
-            t.dealias match {
+          val isOption = fieldType <:< TypeRepr.of[Option[Any]]
+          val innerType = if (isOption) {
+            fieldType.dealias match {
               case AppliedType(_, List(arg)) => arg
-              case _ => report.errorAndAbort(s"Unsupported type of field '$name': ${t.show}")
+              case _ => report.errorAndAbort(s"Unsupported type of field '$name': ${fieldType.show}")
             }
-          } else t
+          } else fieldType
 
-          val expr = (isOption, ResultingType(innerTpe)) match {
+          val expr = (isOption, ResultingType(innerType)) match {
             case (false, Generic(ft)) => ft.asType match {
               case '[f] =>
                 val reads = summonOrAbort[Reads[f]](name)
-                '{ $u.opt[f]($path)(using $reads) getOrElse ${ sel.asExprOf[f] } }
+                '{ $reader.opt[f]($path)(using $reads) getOrElse ${ sel.asExprOf[f] } }
             }
             case (true, Generic(ft)) => ft.asType match {
               case '[f] =>
                 val reads = summonOrAbort[Reads[f]](name)
-                '{ $u.optOpt[f]($path)(using $reads) getOrElse ${ sel.asExprOf[Option[f]] } }
+                '{ $reader.optOpt[f]($path)(using $reads) getOrElse ${ sel.asExprOf[Option[f]] } }
             }
             case (false, ValueClass(ft, inner)) => (ft.asType, inner.asType) match {
               case ('[v], '[i]) =>
                 val reads = summonOrAbort[Reads[i]](name)
                 def wrap(x: Expr[i]): Expr[v] =
                   Select.overloaded(Ref(ft.typeSymbol.companionModule), "apply", Nil, List(x.asTerm)).asExprOf[v]
-                '{ $u.opt[i]($path)(using $reads) map { (x: i) => ${ wrap('x) } } getOrElse ${ sel.asExprOf[v] } }
+                '{ $reader.opt[i]($path)(using $reads) map { (x: i) => ${ wrap('x) } } getOrElse ${ sel.asExprOf[v] } }
             }
             case (true, ValueClass(ft, inner)) => (ft.asType, inner.asType) match {
               case ('[v], '[i]) =>
                 val reads = summonOrAbort[Reads[i]](name)
                 def wrap(x: Expr[i]): Expr[v] =
                   Select.overloaded(Ref(ft.typeSymbol.companionModule), "apply", Nil, List(x.asTerm)).asExprOf[v]
-                '{ $u.optOpt[i]($path)(using $reads) map { _ map { (x: i) => ${ wrap('x) } } } getOrElse ${ sel.asExprOf[Option[v]] } }
+                '{ $reader.optOpt[i]($path)(using $reads) map { _ map { (x: i) => ${ wrap('x) } } } getOrElse ${ sel.asExprOf[Option[v]] } }
             }
             case (false, CaseClass(ft)) => ft.asType match {
               case '[f] =>
                 val updater = summonOrAbort[PartialUpdater[f]](name)
-                '{ $u.reader($path) map { x => $updater.apply(${ sel.asExprOf[f] }, x) } getOrElse ${ sel.asExprOf[f] } }
+                '{ $reader.reader($path) map { x => $updater.apply(${ sel.asExprOf[f] }, x) } getOrElse ${ sel.asExprOf[f] } }
             }
             case (true, CaseClass(ft)) => ft.asType match {
               case '[f] =>
                 val updater = summonOrAbort[PartialUpdater[f]](name)
                 val reads = summonOrAbort[Reads[f]](name)
                 '{
-                  val r: Option[Option[JsonReader]] = $u.readerOpt($path)
-                  (r, ${ sel.asExprOf[Option[f]] }) match {
-                    case (None, None)              => None
-                    case (Some(None), None)        => None
-                    case (Some(Some(_)), None)     => $u.opt[f]($path)(using $reads)
-                    case (None, Some(xx))          => Some(xx)
-                    case (Some(None), Some(_))     => None
-                    case (Some(Some(r)), Some(xx)) => Some($updater.apply(xx, r))
+                  val nested: Option[Option[JsonReader]] = $reader.readerOpt($path)
+                  (nested, ${ sel.asExprOf[Option[f]] }) match {
+                    case (None, None)                        => None
+                    case (Some(None), None)                  => None
+                    case (Some(Some(_)), None)               => $reader.opt[f]($path)(using $reads)
+                    case (None, Some(existing))              => Some(existing)
+                    case (Some(None), Some(_))               => None
+                    case (Some(Some(inner)), Some(existing)) => Some($updater.apply(existing, inner))
                   }
                 }
             }
-            case _ => report.errorAndAbort(s"Unsupported type of field '$name': ${t.show}")
+            case _ => report.errorAndAbort(s"Unsupported type of field '$name': ${fieldType.show}")
           }
           expr.asTerm
       }
@@ -175,11 +175,11 @@ object PartialUpdater {
 
     // entity.copy(...) with every field passed positionally: updatable fields get
     // their computed value, @skip fields keep the current value
-    def copy(entity: Expr[T], u: Expr[JsonReader]): Expr[T] = {
-      val args = symbol.caseFields.map(f => fieldValue(entity, u, f))
+    def copy(entity: Expr[T], reader: Expr[JsonReader]): Expr[T] = {
+      val args = symbol.caseFields.map(field => fieldValue(entity, reader, field))
       val copySel = Select.unique(entity.asTerm, "copy")
       val copyFn = tpe.dealias match {
-        case AppliedType(_, targs) => TypeApply(copySel, targs.map(t => Inferred(t)))
+        case AppliedType(_, targs) => TypeApply(copySel, targs.map(Inferred(_)))
         case _                     => copySel
       }
       Apply(copyFn, args).asExprOf[T]
@@ -187,7 +187,7 @@ object PartialUpdater {
 
     '{
       new PartialUpdater[T] {
-        def apply(entity: T, u: JsonReader): T = ${ copy('entity, 'u) }
+        def apply(entity: T, reader: JsonReader): T = ${ copy('entity, 'reader) }
       }
     }
   }

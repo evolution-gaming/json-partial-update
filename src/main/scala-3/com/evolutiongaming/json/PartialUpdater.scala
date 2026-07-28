@@ -62,7 +62,7 @@ object PartialUpdater {
 
   inline def derived[T]: PartialUpdater[T] = ${ updaterImpl[T] }
 
-  private def updaterImpl[T: Type](using Quotes): Expr[PartialUpdater[T]] = {
+  private def updaterImpl[T: Type](using quotes: Quotes): Expr[PartialUpdater[T]] = {
     import quotes.reflect.*
 
     val tpe = TypeRepr.of[T]
@@ -71,29 +71,8 @@ object PartialUpdater {
     if (!(symbol.isClassDef && symbol.flags.is(Flags.Case) && !symbol.flags.is(Flags.Abstract)))
       report.errorAndAbort(s"${tpe.show} is not a concrete case class")
 
-    sealed trait ResultingType { def tpe: TypeRepr }
-    object ResultingType {
-
-      case class ValueClass(tpe: TypeRepr, innerType: TypeRepr) extends ResultingType
-      case class CaseClass(tpe: TypeRepr) extends ResultingType
-      case class Generic(tpe: TypeRepr) extends ResultingType
-
-      def apply(fieldType: TypeRepr): ResultingType = {
-        val symbol = fieldType.typeSymbol
-        if (symbol.isClassDef && symbol.flags.is(Flags.Case)) {
-          if (fieldType <:< TypeRepr.of[AnyVal]) {
-            val innerField = symbol.caseFields.head
-            ValueClass(fieldType, fieldType.memberType(innerField).widenByName)
-          } else if (symbol.flags.is(Flags.Abstract)) {
-            Generic(fieldType)
-          } else {
-            CaseClass(fieldType)
-          }
-        } else {
-          Generic(fieldType)
-        }
-      }
-    }
+    val shapes = new FieldShapes[quotes.type]
+    import shapes.Shape
 
     def summonOrAbort[A: Type](field: String): Expr[A] =
       Expr.summon[A].getOrElse(
@@ -102,8 +81,6 @@ object PartialUpdater {
     val updatable = MacroUtil.fieldMap(tpe).toMap
 
     def fieldValue(entity: Expr[T], reader: Expr[JsonReader], field: Symbol): Term = {
-      import ResultingType.*
-
       val name = field.name
       val sel = Select.unique(entity.asTerm, name)
 
@@ -121,37 +98,37 @@ object PartialUpdater {
             }
           } else fieldType
 
-          val expr = (isOption, ResultingType(innerType)) match {
-            case (false, Generic(ft)) => ft.asType match {
+          val expr = (isOption, shapes.of(innerType)) match {
+            case (false, Shape.Generic(ft)) => ft.asType match {
               case '[f] =>
                 val reads = summonOrAbort[Reads[f]](name)
                 '{ $reader.opt[f]($path)(using $reads) getOrElse ${ sel.asExprOf[f] } }
             }
-            case (true, Generic(ft)) => ft.asType match {
+            case (true, Shape.Generic(ft)) => ft.asType match {
               case '[f] =>
                 val reads = summonOrAbort[Reads[f]](name)
                 '{ $reader.optOpt[f]($path)(using $reads) getOrElse ${ sel.asExprOf[Option[f]] } }
             }
-            case (false, ValueClass(ft, inner)) => (ft.asType, inner.asType) match {
+            case (false, Shape.ValueClass(ft, inner)) => (ft.asType, inner.asType) match {
               case ('[v], '[i]) =>
                 val reads = summonOrAbort[Reads[i]](name)
                 def wrap(x: Expr[i]): Expr[v] =
                   Select.overloaded(Ref(ft.typeSymbol.companionModule), "apply", Nil, List(x.asTerm)).asExprOf[v]
                 '{ $reader.opt[i]($path)(using $reads) map { (x: i) => ${ wrap('x) } } getOrElse ${ sel.asExprOf[v] } }
             }
-            case (true, ValueClass(ft, inner)) => (ft.asType, inner.asType) match {
+            case (true, Shape.ValueClass(ft, inner)) => (ft.asType, inner.asType) match {
               case ('[v], '[i]) =>
                 val reads = summonOrAbort[Reads[i]](name)
                 def wrap(x: Expr[i]): Expr[v] =
                   Select.overloaded(Ref(ft.typeSymbol.companionModule), "apply", Nil, List(x.asTerm)).asExprOf[v]
                 '{ $reader.optOpt[i]($path)(using $reads) map { _ map { (x: i) => ${ wrap('x) } } } getOrElse ${ sel.asExprOf[Option[v]] } }
             }
-            case (false, CaseClass(ft)) => ft.asType match {
+            case (false, Shape.CaseClass(ft)) => ft.asType match {
               case '[f] =>
                 val updater = summonOrAbort[PartialUpdater[f]](name)
                 '{ $reader.reader($path) map { x => $updater.apply(${ sel.asExprOf[f] }, x) } getOrElse ${ sel.asExprOf[f] } }
             }
-            case (true, CaseClass(ft)) => ft.asType match {
+            case (true, Shape.CaseClass(ft)) => ft.asType match {
               case '[f] =>
                 val updater = summonOrAbort[PartialUpdater[f]](name)
                 val reads = summonOrAbort[Reads[f]](name)

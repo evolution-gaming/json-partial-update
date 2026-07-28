@@ -74,19 +74,26 @@ object PartialUpdater {
     val shapes = new FieldShapes[quotes.type]
     import shapes.Shape
 
-    def summonOrAbort[A: Type](field: String): Expr[A] =
-      Expr.summon[A].getOrElse(
-        report.errorAndAbort(s"No implicit ${TypeRepr.of[A].show} found (required for field '$field' of ${tpe.show})"))
-
     val updatable = MacroUtil.fieldMap(tpe).toMap
 
-    def fieldValue(entity: Expr[T], reader: Expr[JsonReader], field: Symbol): Term = {
+    // collects missing implicits instead of aborting on the first one, so a single
+    // compile lists every missing instance; the compiler shows only one error per
+    // expansion position, hence one aggregated message rather than report.error per field
+    val missing = scala.collection.mutable.ListBuffer.empty[String]
+
+    def summonOrError[A: Type](field: String): Option[Expr[A]] = {
+      val result = Expr.summon[A]
+      if (result.isEmpty) missing += s"${TypeRepr.of[A].show} (required for field '$field')"
+      result
+    }
+
+    def fieldValue(entity: Expr[T], reader: Expr[JsonReader], field: Symbol): Option[Term] = {
       val name = field.name
       val sel = Select.unique(entity.asTerm, name)
 
       updatable.get(name) match {
         // field is marked with @skip: keep the current value
-        case None => sel
+        case None => Some(sel)
 
         case Some(fieldType) =>
           val path = Expr(name)
@@ -101,52 +108,59 @@ object PartialUpdater {
           val expr = (isOption, shapes.of(innerType)) match {
             case (false, Shape.Generic(ft)) => ft.asType match {
               case '[f] =>
-                val reads = summonOrAbort[Reads[f]](name)
-                '{ $reader.opt[f]($path)(using $reads) getOrElse ${ sel.asExprOf[f] } }
+                summonOrError[Reads[f]](name) map { reads =>
+                  '{ $reader.opt[f]($path)(using $reads) getOrElse ${ sel.asExprOf[f] } }
+                }
             }
             case (true, Shape.Generic(ft)) => ft.asType match {
               case '[f] =>
-                val reads = summonOrAbort[Reads[f]](name)
-                '{ $reader.optOpt[f]($path)(using $reads) getOrElse ${ sel.asExprOf[Option[f]] } }
+                summonOrError[Reads[f]](name) map { reads =>
+                  '{ $reader.optOpt[f]($path)(using $reads) getOrElse ${ sel.asExprOf[Option[f]] } }
+                }
             }
             case (false, Shape.ValueClass(ft, inner)) => (ft.asType, inner.asType) match {
               case ('[v], '[i]) =>
-                val reads = summonOrAbort[Reads[i]](name)
-                def wrap(x: Expr[i]): Expr[v] =
-                  Select.overloaded(Ref(ft.typeSymbol.companionModule), "apply", Nil, List(x.asTerm)).asExprOf[v]
-                '{ $reader.opt[i]($path)(using $reads) map { (x: i) => ${ wrap('x) } } getOrElse ${ sel.asExprOf[v] } }
+                summonOrError[Reads[i]](name) map { reads =>
+                  def wrap(x: Expr[i]): Expr[v] =
+                    Select.overloaded(Ref(ft.typeSymbol.companionModule), "apply", Nil, List(x.asTerm)).asExprOf[v]
+                  '{ $reader.opt[i]($path)(using $reads) map { (x: i) => ${ wrap('x) } } getOrElse ${ sel.asExprOf[v] } }
+                }
             }
             case (true, Shape.ValueClass(ft, inner)) => (ft.asType, inner.asType) match {
               case ('[v], '[i]) =>
-                val reads = summonOrAbort[Reads[i]](name)
-                def wrap(x: Expr[i]): Expr[v] =
-                  Select.overloaded(Ref(ft.typeSymbol.companionModule), "apply", Nil, List(x.asTerm)).asExprOf[v]
-                '{ $reader.optOpt[i]($path)(using $reads) map { _ map { (x: i) => ${ wrap('x) } } } getOrElse ${ sel.asExprOf[Option[v]] } }
+                summonOrError[Reads[i]](name) map { reads =>
+                  def wrap(x: Expr[i]): Expr[v] =
+                    Select.overloaded(Ref(ft.typeSymbol.companionModule), "apply", Nil, List(x.asTerm)).asExprOf[v]
+                  '{ $reader.optOpt[i]($path)(using $reads) map { _ map { (x: i) => ${ wrap('x) } } } getOrElse ${ sel.asExprOf[Option[v]] } }
+                }
             }
             case (false, Shape.CaseClass(ft)) => ft.asType match {
               case '[f] =>
-                val updater = summonOrAbort[PartialUpdater[f]](name)
-                '{ $reader.reader($path) map { x => $updater.apply(${ sel.asExprOf[f] }, x) } getOrElse ${ sel.asExprOf[f] } }
+                summonOrError[PartialUpdater[f]](name) map { updater =>
+                  '{ $reader.reader($path) map { x => $updater.apply(${ sel.asExprOf[f] }, x) } getOrElse ${ sel.asExprOf[f] } }
+                }
             }
             case (true, Shape.CaseClass(ft)) => ft.asType match {
               case '[f] =>
-                val updater = summonOrAbort[PartialUpdater[f]](name)
-                val reads = summonOrAbort[Reads[f]](name)
-                '{
-                  val nested: Option[Option[JsonReader]] = $reader.readerOpt($path)
-                  (nested, ${ sel.asExprOf[Option[f]] }) match {
-                    case (None, None)                        => None
-                    case (Some(None), None)                  => None
-                    case (Some(Some(_)), None)               => $reader.opt[f]($path)(using $reads)
-                    case (None, Some(existing))              => Some(existing)
-                    case (Some(None), Some(_))               => None
-                    case (Some(Some(inner)), Some(existing)) => Some($updater.apply(existing, inner))
+                val updater = summonOrError[PartialUpdater[f]](name)
+                val reads = summonOrError[Reads[f]](name)
+                updater.zip(reads) map { (updater, reads) =>
+                  '{
+                    val nested: Option[Option[JsonReader]] = $reader.readerOpt($path)
+                    (nested, ${ sel.asExprOf[Option[f]] }) match {
+                      case (None, None)                        => None
+                      case (Some(None), None)                  => None
+                      case (Some(Some(_)), None)               => $reader.opt[f]($path)(using $reads)
+                      case (None, Some(existing))              => Some(existing)
+                      case (Some(None), Some(_))               => None
+                      case (Some(Some(inner)), Some(existing)) => Some($updater.apply(existing, inner))
+                    }
                   }
                 }
             }
             case _ => report.errorAndAbort(s"Unsupported type of field '$name': ${fieldType.show}")
           }
-          expr.asTerm
+          expr.map(_.asTerm)
       }
     }
 
@@ -154,12 +168,15 @@ object PartialUpdater {
     // their computed value, @skip fields keep the current value
     def copy(entity: Expr[T], reader: Expr[JsonReader]): Expr[T] = {
       val args = symbol.caseFields.map(field => fieldValue(entity, reader, field))
+      if (missing.nonEmpty)
+        report.errorAndAbort(
+          s"Can not derive PartialUpdater[${tpe.show}], missing implicits:${missing.mkString("\n  - ", "\n  - ", "")}")
       val copySel = Select.unique(entity.asTerm, "copy")
       val copyFn = tpe.dealias match {
         case AppliedType(_, targs) => TypeApply(copySel, targs.map(Inferred(_)))
         case _                     => copySel
       }
-      Apply(copyFn, args).asExprOf[T]
+      Apply(copyFn, args.flatten).asExprOf[T]
     }
 
     '{

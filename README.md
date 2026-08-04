@@ -2,6 +2,27 @@
 
 PlayJson extension for partial updates
 
+Cross-built for Scala 2.13 and Scala 3.
+
+## Usage
+
+```scala
+import com.evolutiongaming.json.PartialUpdater
+import com.evolutiongaming.json.PartialUpdater._
+
+case class Entity(a: String, b: Option[String])
+
+implicit val entityUpdater: PartialUpdater[Entity] = PartialUpdater.updater[Entity]
+
+val updated = entity updated json // only fields present in json are updated
+```
+
+On Scala 3 the updater can also be derived:
+
+```scala
+case class Entity(a: String, b: Option[String]) derives PartialUpdater
+```
+
 ## Installation
 
 ```scala

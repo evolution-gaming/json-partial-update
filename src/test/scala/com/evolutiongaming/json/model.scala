@@ -13,6 +13,15 @@ case class Profile(
   `type`: Option[ProfileType],
 )
 
+case class Version(value: Int) extends AnyVal
+
+object Version {
+  // the overload makes value-class specs also cover companion `apply` overload resolution
+  def apply(value: String): Version = Version(value.toInt)
+}
+
+case class Doc(rev: Version, tag: Option[Version], name: String)
+
 sealed abstract case class ProfileType(value: String)
 
 object ProfileType {

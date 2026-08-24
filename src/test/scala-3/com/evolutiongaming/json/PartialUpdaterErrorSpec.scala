@@ -18,7 +18,8 @@ class PartialUpdaterErrorSpec extends AnyWordSpec {
         class NoReadsB
         case class Broken(a: NoReadsA, b: NoReadsB, name: String)
         com.evolutiongaming.json.PartialUpdater.updater[Broken]
-        """)
+        """,
+      )
 
       errors.map(_.message) match {
         case List(message) =>
@@ -36,7 +37,8 @@ class PartialUpdaterErrorSpec extends AnyWordSpec {
         case class Inner(x: Int)
         case class Outer(inner: Option[Inner])
         com.evolutiongaming.json.PartialUpdater.updater[Outer]
-        """)
+        """,
+      )
 
       errors.map(_.message) match {
         case List(message) =>
@@ -52,11 +54,12 @@ class PartialUpdaterErrorSpec extends AnyWordSpec {
         """
         class NotACaseClass
         com.evolutiongaming.json.PartialUpdater.updater[NotACaseClass]
-        """)
+        """,
+      )
 
       errors.map(_.message) match {
         case List(message) => message must include("is not a concrete case class")
-        case other         => fail(s"expected exactly one error, got: $other")
+        case other => fail(s"expected exactly one error, got: $other")
       }
     }
   }

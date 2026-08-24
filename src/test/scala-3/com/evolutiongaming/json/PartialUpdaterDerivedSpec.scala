@@ -1,10 +1,9 @@
 package com.evolutiongaming.json
 
+import com.evolutiongaming.json.PartialUpdater.*
 import org.scalatest.matchers.must.Matchers.*
 import org.scalatest.wordspec.AnyWordSpec
-
 import play.api.libs.json.*
-import com.evolutiongaming.json.PartialUpdater.*
 
 class PartialUpdaterDerivedSpec extends AnyWordSpec {
   import PartialUpdaterDerivedSpec.*

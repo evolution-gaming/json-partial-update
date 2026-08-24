@@ -1,16 +1,15 @@
 package com.evolutiongaming.json
 
+import com.evolutiongaming.json.PartialUpdater._
 import org.scalatest.matchers.must.Matchers._
 import org.scalatest.wordspec.AnyWordSpec
-
 import play.api.libs.json._
-import com.evolutiongaming.json.PartialUpdater._
 
 class PartialUpdaterSpec extends AnyWordSpec {
   import PartialUpdaterSpec._
 
-  implicit val phoneReads: Reads[Phone]                = Json.reads[Phone]
-  implicit val phoneUpdater: PartialUpdater[Phone]     = PartialUpdater.updater[Phone]
+  implicit val phoneReads: Reads[Phone] = Json.reads[Phone]
+  implicit val phoneUpdater: PartialUpdater[Phone] = PartialUpdater.updater[Phone]
   implicit val addressUpdater: PartialUpdater[Address] = PartialUpdater.updater[Address]
   implicit val profileUpdater: PartialUpdater[Profile] = PartialUpdater.updater[Profile]
 
@@ -34,17 +33,18 @@ class PartialUpdaterSpec extends AnyWordSpec {
       (profile updated json"""{"alias": null}""") mustBe profile.copy(alias = None)
     }
     "affect entity's 'address/street' if json contains 'address/street' property" in new Scope {
-      (profile updated json"""{"address": { "street": "updated" }}""") mustBe profile.copy(address = profile.address.copy(street = "updated"))
+      (profile updated json"""{"address": { "street": "updated" }}""") mustBe
+        profile.copy(address = profile.address.copy(street = "updated"))
     }
     "affect entity's 'phone/area' if json contains 'phone/area' property" in new Scope {
       (profile updated json"""{"phone": { "area": "updated" }}""") mustBe profile.copy(
-        phone = profile.phone.map(_.copy(area = "updated"))
+        phone = profile.phone.map(_.copy(area = "updated")),
       )
     }
     "affect entity's 'phone' if json contains 'phone' property" in new Scope {
       val noPhoneProfile = profile.copy(phone = None)
       (noPhoneProfile updated json"""{"phone": { "area": "updated", "number": "updated" }}""") mustBe profile.copy(
-        phone = Some(Phone("updated", "updated"))
+        phone = Some(Phone("updated", "updated")),
       )
     }
 
@@ -80,11 +80,13 @@ class PartialUpdaterSpec extends AnyWordSpec {
       address = Address(
         city = "city",
         street = "street",
-        building = 1),
+        building = 1,
+      ),
       alias = Some("alias"),
       phone = Some(Phone(
         area = "area",
-        number = "number")),
+        number = "number",
+      )),
       `type` = Some(ProfileType.Free),
     )
   }
@@ -96,11 +98,11 @@ object PartialUpdaterSpec {
       val strings = sc.parts.iterator
       val expressions = args.iterator
       val buf = new StringBuilder(strings.next())
-      while(strings.hasNext) {
+      while (strings.hasNext) {
         buf append expressions.next()
         buf append strings.next()
       }
       Json parse buf.toString
     }
-  } 
+  }
 }

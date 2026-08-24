@@ -1,18 +1,16 @@
 package com.evolutiongaming.json
 
-import org.scalatest.matchers.must.Matchers.*
-import org.scalatest.wordspec.AnyWordSpec
-
-import play.api.libs.json.*
 import com.evolutiongaming.json.PartialUpdater.*
 import com.evolutiongaming.json.PartialUpdaterGenericSpec.*
+import org.scalatest.matchers.must.Matchers.*
+import org.scalatest.wordspec.AnyWordSpec
+import play.api.libs.json.*
 
 /**
-  * Parameterized case classes are supported on Scala 3 only:
-  * the Scala 2 macro reads field types without substituting type parameters
-  * and fails to expand for such types.
-  * See https://github.com/evolution-gaming/json-partial-update/pull/132/changes/4fde29b66c12423786a398e0a596c5a01cf8a28c
-  */
+ * Parameterized case classes are supported on Scala 3 only: the Scala 2 macro reads field types
+ * without substituting type parameters and fails to expand for such types. See
+ * https://github.com/evolution-gaming/json-partial-update/pull/132/changes/4fde29b66c12423786a398e0a596c5a01cf8a28c
+ */
 class PartialUpdaterGenericSpec extends AnyWordSpec {
 
   implicit val boxUpdater: PartialUpdater[Box[String]] = PartialUpdater.updater[Box[String]]

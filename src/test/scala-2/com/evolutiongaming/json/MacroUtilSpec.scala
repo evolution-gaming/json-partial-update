@@ -3,7 +3,6 @@ package com.evolutiongaming.json
 import org.scalatest.matchers.must.Matchers._
 import org.scalatest.wordspec.AnyWordSpec
 
-
 class MacroUtilSpec extends AnyWordSpec {
   import MacroUtilSpec._
 

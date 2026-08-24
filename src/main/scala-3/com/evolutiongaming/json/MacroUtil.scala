@@ -3,21 +3,26 @@ package com.evolutiongaming.json
 import scala.quoted.*
 
 /**
-  * The only purpose of this object is to enumerate case class fields
-  * which are not marked by @skip annotation.
-  *
-  * This list is used by PartialUpdater macro.
-  */
+ * The only purpose of this object is to enumerate case class fields which are not marked by @skip
+ * annotation.
+ *
+ * This list is used by PartialUpdater macro.
+ */
 private[json] object MacroUtil {
 
   /**
-    * Enumerates case class fields not marked by @skip, in declaration order.
-    *
-    * Depending on where the annotation ends up (Scala 3 keeps it on the
-    * constructor parameter unless meta-annotated), both the field symbol
-    * and the corresponding primary constructor parameter are checked.
-    */
-  private[json] def fieldMap(using Quotes)(tpe: quotes.reflect.TypeRepr): List[(String, quotes.reflect.TypeRepr)] = {
+   * Enumerates case class fields not marked by @skip, in declaration order.
+   *
+   * Depending on where the annotation ends up (Scala 3 keeps it on the constructor parameter unless
+   * meta-annotated), both the field symbol and the corresponding primary constructor parameter are
+   * checked.
+   */
+  private[json] def fieldMap(
+    using
+    Quotes,
+  )(
+    tpe: quotes.reflect.TypeRepr,
+  ): List[(String, quotes.reflect.TypeRepr)] = {
     import quotes.reflect.*
 
     val symbol = tpe.typeSymbol
@@ -32,9 +37,9 @@ private[json] object MacroUtil {
 
     symbol.caseFields.filterNot(shouldSkip) map { field =>
       val fieldTpe = tpe.memberType(field) match {
-        case ByNameType(result)       => result
+        case ByNameType(result) => result
         case MethodType(_, _, result) => result
-        case t                        => t
+        case t => t
       }
       (field.name, fieldTpe)
     }

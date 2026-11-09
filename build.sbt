@@ -47,8 +47,8 @@ Compile / doc / scalacOptions ++= {
 
 libraryDependencies ++= Seq(
   "org.playframework" %% "play-json" % "3.0.6",
-  "com.fasterxml.jackson.core" % "jackson-core" % "2.22.4",
-  "com.fasterxml.jackson.core" % "jackson-databind" % "2.22.4",
+  "com.fasterxml.jackson.core" % "jackson-core" % "2.23.0",
+  "com.fasterxml.jackson.core" % "jackson-databind" % "2.23.0",
   "org.scalatest" %% "scalatest" % "3.2.20" % Test,
 )
 
